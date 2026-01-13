@@ -19,8 +19,8 @@ exports.signup = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const userExists = await User.findOne({ email: normalizedEmail });
-    if (userExists) {
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -43,12 +43,10 @@ exports.signup = async (req, res) => {
 };
 
 /* ======================================================
-   LOGIN (✔ FIXED & SAFE)
+   LOGIN
 ====================================================== */
 exports.login = async (req, res) => {
   try {
-    console.log("LOGIN HIT:", req.body); // 🔍 debug (optional)
-
     const { email, password, role } = req.body;
 
     if (!email || !password || !role) {
@@ -63,20 +61,19 @@ exports.login = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    /* ✅ Find user by email ONLY */
+    // ✅ Find by email only
     const user = await User.findOne({ email: normalizedEmail });
-
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    /* ✅ Password check (AWAIT is CRITICAL) */
+    // ✅ Password check (await is critical)
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    /* ✅ Role check AFTER password */
+    // ✅ Role check after password
     if (user.role !== role) {
       return res.status(400).json({
         message: `You are registered as ${user.role}`,
@@ -88,8 +85,6 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
-    console.log("LOGIN SUCCESS:", user.email); // 🔍 debug
 
     return res.status(200).json({
       token,
