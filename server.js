@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 /* ---------- ROUTES ---------- */
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/authroutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const disposerRequestRoutes = require("./routes/disposerRequestRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
