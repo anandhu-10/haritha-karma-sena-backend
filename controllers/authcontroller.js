@@ -9,107 +9,84 @@ exports.signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    /* ---------- VALIDATION ---------- */
     if (!name || !email || !password || !role) {
-      return res.status(400).json({
-        message: "All fields are required",
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     if (!["disposer", "collector"].includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role selected",
-      });
+      return res.status(400).json({ message: "Invalid role selected" });
     }
 
-    /* ---------- EMAIL NORMALIZATION ---------- */
     const normalizedEmail = email.trim().toLowerCase();
 
-    /* ---------- CHECK USER ---------- */
     const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
-      return res.status(400).json({
-        message: "User already exists",
-      });
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    /* ---------- HASH PASSWORD ---------- */
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    /* ---------- CREATE USER ---------- */
-    const user = await User.create({
+    await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
       role,
     });
 
-    /* ---------- RESPONSE ---------- */
     res.status(201).json({
       message: "User registered successfully",
     });
   } catch (err) {
     console.error("Signup Error:", err.message);
-    res.status(500).json({
-      message: "Server error during signup",
-    });
+    res.status(500).json({ message: "Server error during signup" });
   }
 };
 
 /* ======================================================
-   LOGIN
+   LOGIN (✅ FIXED)
 ====================================================== */
 exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    /* ---------- VALIDATION ---------- */
     if (!email || !password || !role) {
-      return res.status(400).json({
-        message: "Email, password and role are required",
-      });
+      return res
+        .status(400)
+        .json({ message: "Email, password and role are required" });
     }
 
     if (!["disposer", "collector"].includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role selected",
-      });
+      return res.status(400).json({ message: "Invalid role selected" });
     }
 
-    /* ---------- EMAIL NORMALIZATION ---------- */
     const normalizedEmail = email.trim().toLowerCase();
 
-    /* ---------- FIND USER ---------- */
-    const user = await User.findOne({
-      email: normalizedEmail,
-      role,
-    });
+    /* 🔥 FIX 1: Find by EMAIL ONLY */
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
-      return res.status(400).json({
-        message: "Invalid credentials",
-      });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    /* ---------- PASSWORD CHECK ---------- */
+    /* 🔥 FIX 2: Check PASSWORD */
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    /* 🔥 FIX 3: Check ROLE AFTER password */
+    if (user.role !== role) {
       return res.status(400).json({
-        message: "Invalid credentials",
+        message: `You are registered as ${user.role}`,
       });
     }
 
-    /* ---------- JWT ---------- */
     const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    /* ---------- RESPONSE ---------- */
     res.status(200).json({
       token,
       user: {
@@ -121,8 +98,6 @@ exports.login = async (req, res) => {
     });
   } catch (err) {
     console.error("Login Error:", err.message);
-    res.status(500).json({
-      message: "Server error during login",
-    });
+    res.status(500).json({ message: "Server error during login" });
   }
 };
