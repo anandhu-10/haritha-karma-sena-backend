@@ -4,38 +4,32 @@ const cors = require("cors");
 require("dotenv").config();
 
 /* ---------- ROUTES ---------- */
-const authRoutes = require("./routes/auth"); // ✅ FIXED NAME
+const authRoutes = require("./routes/authroutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const disposerRequestRoutes = require("./routes/disposerRequestRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
-
-/* ---------- CONFIG ---------- */
 const PORT = process.env.PORT || 5000;
 
-/* ---------- CORS CONFIG ---------- */
-const corsOptions = {
-  origin: [
-    "http://localhost:3000", // ✅ CRA frontend
-    "https://haritha-karma-sena.vercel.app", // ✅ Vercel frontend
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-/* ✅ HANDLE PREFLIGHT REQUESTS */
-app.options("*", cors(corsOptions));
+/* ---------- CORS ---------- */
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://haritha-karma-sena.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 /* ---------- BODY PARSERS ---------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ---------- ROUTES ---------- */
-app.use("/api/auth", authroutes); // ✅ FIXED VARIABLE NAME
+app.use("/api/auth", authRoutes);
 app.use("/api", collectionRoutes);
 app.use("/api/disposer-requests", disposerRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -56,5 +50,5 @@ mongoose
   })
   .catch((err) => {
     console.error("❌ MongoDB connection failed:", err);
-    process.exit(1); // ✅ Prevent hanging server
+    process.exit(1);
   });

@@ -2,9 +2,7 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/* ======================================================
-   SIGNUP
-====================================================== */
+/* ================= SIGNUP ================= */
 exports.signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -37,14 +35,12 @@ exports.signup = async (req, res) => {
       message: "User registered successfully",
     });
   } catch (err) {
-    console.error("Signup Error:", err);
+    console.error("Signup error:", err);
     return res.status(500).json({ message: "Server error during signup" });
   }
 };
 
-/* ======================================================
-   LOGIN
-====================================================== */
+/* ================= LOGIN ================= */
 exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -55,29 +51,20 @@ exports.login = async (req, res) => {
         .json({ message: "Email, password and role are required" });
     }
 
-    if (!["disposer", "collector"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role selected" });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    // ✅ Find by email only
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // ✅ Password check (await is critical)
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // ✅ Role check after password
     if (user.role !== role) {
-      return res.status(400).json({
-        message: `You are registered as ${user.role}`,
-      });
+      return res
+        .status(400)
+        .json({ message: `You are registered as ${user.role}` });
     }
 
     const token = jwt.sign(
@@ -96,7 +83,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Login Error:", err);
+    console.error("Login error:", err);
     return res.status(500).json({ message: "Server error during login" });
   }
 };
