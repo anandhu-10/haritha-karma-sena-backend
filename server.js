@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 /* ---------- ROUTES ---------- */
-const authRoutes = require("./routes/authroutes");
+const authRoutes = require("./routes/authRoutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const disposerRequestRoutes = require("./routes/disposerRequestRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
@@ -14,25 +14,21 @@ const app = express();
 /* ---------- CONFIG ---------- */
 const PORT = process.env.PORT || 5000;
 
-/* ---------- CORS (FIXED) ---------- */
+/* ---------- MIDDLEWARE ---------- */
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",               // local frontend
-      "https://haritha-karma-sena.vercel.app" // deployed frontend
+      "http://localhost:5173",
+      "https://haritha-karma-sena.vercel.app",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// ✅ VERY IMPORTANT: handle preflight requests
-app.options("*", cors());
-
-/* ---------- BODY PARSERS ---------- */
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* ---------- ROUTES ---------- */
 app.use("/api/auth", authRoutes);
