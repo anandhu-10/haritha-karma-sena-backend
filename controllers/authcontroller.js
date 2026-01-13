@@ -33,20 +33,22 @@ exports.signup = async (req, res) => {
       role,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
     });
   } catch (err) {
-    console.error("Signup Error:", err.message);
-    res.status(500).json({ message: "Server error during signup" });
+    console.error("Signup Error:", err);
+    return res.status(500).json({ message: "Server error during signup" });
   }
 };
 
 /* ======================================================
-   LOGIN (✅ FIXED)
+   LOGIN (✔ FIXED & SAFE)
 ====================================================== */
 exports.login = async (req, res) => {
   try {
+    console.log("LOGIN HIT:", req.body); // 🔍 debug (optional)
+
     const { email, password, role } = req.body;
 
     if (!email || !password || !role) {
@@ -61,20 +63,20 @@ exports.login = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    /* 🔥 FIX 1: Find by EMAIL ONLY */
+    /* ✅ Find user by email ONLY */
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    /* 🔥 FIX 2: Check PASSWORD */
+    /* ✅ Password check (AWAIT is CRITICAL) */
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    /* 🔥 FIX 3: Check ROLE AFTER password */
+    /* ✅ Role check AFTER password */
     if (user.role !== role) {
       return res.status(400).json({
         message: `You are registered as ${user.role}`,
@@ -87,7 +89,9 @@ exports.login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({
+    console.log("LOGIN SUCCESS:", user.email); // 🔍 debug
+
+    return res.status(200).json({
       token,
       user: {
         id: user._id,
@@ -97,7 +101,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Login Error:", err.message);
-    res.status(500).json({ message: "Server error during login" });
+    console.error("Login Error:", err);
+    return res.status(500).json({ message: "Server error during login" });
   }
 };
