@@ -14,24 +14,27 @@ const app = express();
 /* ---------- CONFIG ---------- */
 const PORT = process.env.PORT || 5000;
 
-/* ---------- MIDDLEWARE ---------- */
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://haritha-karma-sena.vercel.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+/* ---------- CORS (FIXED) ---------- */
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://haritha-karma-sena.vercel.app",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
 
+app.use(cors(corsOptions));
+
+/* ✅ HANDLE PREFLIGHT */
+app.options("*", cors(corsOptions));
+
+/* ---------- BODY PARSERS ---------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ---------- ROUTES ---------- */
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authroutes);
 app.use("/api", collectionRoutes);
 app.use("/api/disposer-requests", disposerRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
