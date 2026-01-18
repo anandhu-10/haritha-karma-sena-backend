@@ -22,17 +22,18 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-
 /* ---------- ROUTES ---------- */
 const authRoutes = require("./routes/authroutes");
 const collectionRoutes = require("./routes/collectionRoutes");
-const disposerRequestRoutes = require("./routes/disposerRequestRoutes"); // ✅ MUST MATCH FILE NAME
+const disposerRequestRoutes = require("./routes/disposerRequestRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const paymentRoutes = require("./routes/paymentRoutes"); // ✅ ADDED
 
 app.use("/api/auth", authRoutes);
 app.use("/api", collectionRoutes);
 app.use("/api/disposer-requests", disposerRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/payment", paymentRoutes); // ✅ ADDED
 
 /* ---------- HEALTH CHECK ---------- */
 app.get("/", (req, res) => {
