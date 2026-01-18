@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
+
 const DisposerRequest = require("../models/DisposerRequest");
 const Notification = require("../models/Notification");
+const Payment = require("../models/Payment");
+const authMiddleware = require("../middleware/authMiddleware");
 
 /* ---------------- CREATE request (Disposer) ---------------- */
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
-      disposerId,
       disposerName,
       wasteTypes,
       image,
@@ -15,8 +17,24 @@ router.post("/", async (req, res) => {
       date,
     } = req.body;
 
+    const disposerId = req.user.id; // 🔐 TRUST BACKEND TOKEN
+
     if (!disposerId || !wasteTypes || wasteTypes.length === 0) {
       return res.status(400).json({ message: "Invalid request data" });
+    }
+
+    /* ---------- PAYMENT CHECK (MONTHLY) ---------- */
+    const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+    const paid = await Payment.findOne({
+      userId: disposerId,
+      month,
+    });
+
+    if (!paid) {
+      return res.status(403).json({
+        message: "Monthly disposal fee not paid",
+      });
     }
 
     const request = await DisposerRequest.create({
