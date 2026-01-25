@@ -50,4 +50,53 @@ router.get("/collector/dashboard-stats", async (req, res) => {
   }
 });
 
+/* ---------------- COLLECTOR PICK UP REQUEST ---------------- */
+/*
+  PATCH /api/collector/pickup/:requestId
+  Body: { collectorId }
+*/
+router.patch("/collector/pickup/:requestId", async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { collectorId } = req.body;
+
+    if (!collectorId) {
+      return res.status(400).json({
+        message: "collectorId is required",
+      });
+    }
+
+    const request = await DisposerRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        message: "Disposer request not found",
+      });
+    }
+
+    // ❌ Prevent double pickup
+    if (request.assignedCollector) {
+      return res.status(400).json({
+        message: "Request already picked by another collector",
+      });
+    }
+
+    // ✅ ASSIGN COLLECTOR (THIS FIXES CHAT)
+    request.assignedCollector = collectorId;
+    request.status = "Picked Up";
+
+    await request.save();
+
+    res.status(200).json({
+      message: "Waste picked up successfully",
+      request,
+    });
+  } catch (err) {
+    console.error("PICK UP ERROR:", err);
+    res.status(500).json({
+      message: "Failed to pick up waste",
+    });
+  }
+});
+
 module.exports = router;
