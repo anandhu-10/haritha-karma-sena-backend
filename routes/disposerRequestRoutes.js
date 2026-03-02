@@ -53,6 +53,22 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+/* ---------------- GET MY REQUESTS (🔥 NEW ROUTE FIX) ---------------- */
+router.get("/my", authMiddleware, async (req, res) => {
+  try {
+    const disposerId = req.user.id;
+
+    const requests = await DisposerRequest.find({
+      disposerId,
+    }).sort({ _id: -1 });
+
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error("FETCH MY REQUESTS ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 /* ---------------- GET all requests (Collector) ---------------- */
 router.get("/", async (req, res) => {
   try {
