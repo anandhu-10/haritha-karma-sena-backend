@@ -12,6 +12,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const {
       disposerName,
       wasteTypes,
+      location,
       image,
       status,
       date,
@@ -41,6 +42,7 @@ router.post("/", authMiddleware, async (req, res) => {
       disposerId,
       disposerName,
       wasteTypes,
+      location,
       image,
       status,
       date,

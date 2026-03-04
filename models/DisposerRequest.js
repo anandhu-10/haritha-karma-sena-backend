@@ -23,6 +23,11 @@ const DisposerRequestSchema = new mongoose.Schema(
       required: true,
     },
 
+    location: {
+      type: [Number], // [lng, lat]
+      default: null,
+    },
+
     image: {
       type: String, // base64 allowed
       default: null,
