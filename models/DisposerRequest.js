@@ -13,6 +13,11 @@ const DisposerRequestSchema = new mongoose.Schema(
       required: true,
     },
 
+    collectorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     wasteTypes: {
       type: [String], // ✅ ARRAY FIX
       required: true,

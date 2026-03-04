@@ -75,14 +75,14 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
     }
 
     // ❌ Prevent double pickup
-    if (request.assignedCollector) {
+    if (request.collectorId) {
       return res.status(400).json({
         message: "Request already picked by another collector",
       });
     }
 
     // ✅ ASSIGN COLLECTOR (THIS FIXES CHAT)
-    request.assignedCollector = collectorId;
+    request.collectorId = collectorId;
     request.status = "Picked Up";
 
     await request.save();
