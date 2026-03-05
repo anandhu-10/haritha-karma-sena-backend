@@ -33,6 +33,11 @@ const DisposerRequestSchema = new mongoose.Schema(
       default: null,
     },
 
+    wasteQuantity: {
+      type: Number,
+      required: true,
+    },
+
     status: {
       type: String,
       default: "Pending",

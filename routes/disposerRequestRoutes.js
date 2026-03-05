@@ -12,6 +12,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const {
       disposerName,
       wasteTypes,
+      wasteQuantity,
       location,
       image,
       status,
@@ -20,8 +21,8 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const disposerId = req.user.id; // 🔐 TRUST BACKEND TOKEN
 
-    if (!disposerId || !wasteTypes || wasteTypes.length === 0) {
-      return res.status(400).json({ message: "Invalid request data" });
+    if (!disposerId || !wasteTypes || wasteTypes.length === 0 || !wasteQuantity) {
+      return res.status(400).json({ message: "Invalid request data. Waste types and quantity are required." });
     }
 
     /* ---------- PAYMENT CHECK (MONTHLY) ---------- */
@@ -42,6 +43,7 @@ router.post("/", authMiddleware, async (req, res) => {
       disposerId,
       disposerName,
       wasteTypes,
+      wasteQuantity,
       location,
       image,
       status,
