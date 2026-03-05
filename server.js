@@ -4,6 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 require("dotenv").config();
+const Message = require("./models/Message");
 
 /* ---------- APP ---------- */
 const app = express();
@@ -47,8 +48,18 @@ io.on("connection", (socket) => {
     console.log(`🟢 Joined room: ${roomId}`);
   });
 
-  socket.on("send_message", (data) => {
-    socket.to(data.roomId).emit("receive_message", data);
+  socket.on("send_message", async (data) => {
+    try {
+      await Message.create({
+        roomId: data.roomId,
+        sender: data.sender,
+        message: data.message,
+        time: data.time
+      });
+      socket.to(data.roomId).emit("receive_message", data);
+    } catch (err) {
+      console.error("Socket message save error:", err);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -68,6 +79,17 @@ app.use("/api", collectionRoutes);
 app.use("/api/disposer-requests", disposerRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payment", paymentRoutes);
+
+/* ---------- PERSISTENT CHAT API ---------- */
+app.get("/api/messages/:roomId", async (req, res) => {
+  try {
+    const messages = await Message.find({ roomId: req.params.roomId }).sort({ createdAt: 1 });
+    res.status(200).json(messages);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch messages" });
+  }
+});
+
 
 /* ---------- HEALTH CHECK ---------- */
 app.get("/", (req, res) => {
