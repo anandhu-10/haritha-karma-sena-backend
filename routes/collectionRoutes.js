@@ -7,6 +7,7 @@ const {
 } = require("../controllers/collectionController");
 
 const DisposerRequest = require("../models/DisposerRequest");
+const Notification = require("../models/Notification");
 
 /* ---------------- COLLECTION AREAS ---------------- */
 
@@ -86,6 +87,12 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
     request.status = "Picked Up";
 
     await request.save();
+
+    /* 🔔 CREATE NOTIFICATION FOR DISPOSER */
+    await Notification.create({
+      disposerId: request.disposerId,
+      message: "Your waste request has been picked up by the collector ✅",
+    });
 
     res.status(200).json({
       message: "Waste picked up successfully",
