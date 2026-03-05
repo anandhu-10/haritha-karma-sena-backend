@@ -87,3 +87,37 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: "Server error during login" });
   }
 };
+
+/* ================= PROFILE ================= */
+exports.updateProfile = async (req, res) => {
+  try {
+    const { phone, pincode, panchayath, ward } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.profile = {
+      phone: phone || user.profile?.phone,
+      pincode: pincode || user.profile?.pincode,
+      panchayath: panchayath || user.profile?.panchayath,
+      ward: ward || user.profile?.ward,
+    };
+
+    await user.save();
+
+    res.status(200).json({ message: "Profile updated successfully", user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

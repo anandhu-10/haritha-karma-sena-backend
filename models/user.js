@@ -23,6 +23,24 @@ const userSchema = new mongoose.Schema(
       enum: ["disposer", "collector"],
       required: true,
     },
+    profile: {
+      phone: String,
+      pincode: String,
+      panchayath: String,
+      ward: String,
+    },
+    communityPoints: {
+      type: Number,
+      default: 0,
+    },
+    claimedRewards: [
+      {
+        rewardId: { type: mongoose.Schema.Types.ObjectId, ref: "Reward" },
+        claimedAt: { type: Date, default: Date.now },
+        title: String,
+        rewardType: String
+      }
+    ]
   },
   { timestamps: true }
 );

@@ -80,6 +80,16 @@ app.use("/api/disposer-requests", disposerRequestRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payment", paymentRoutes);
 
+const rewardRoutes = require("./routes/rewardRoutes");
+const leaderboardRoutes = require("./routes/leaderboardRoutes");
+const pointsRoutes = require("./routes/pointsRoutes");
+const statsRoutes = require("./routes/statsRoutes");
+
+app.use("/api/rewards", rewardRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/points", pointsRoutes);
+app.use("/api/stats", statsRoutes);
+
 /* ---------- PERSISTENT CHAT API ---------- */
 app.get("/api/messages/:roomId", async (req, res) => {
   try {

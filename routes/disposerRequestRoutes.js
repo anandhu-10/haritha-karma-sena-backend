@@ -5,6 +5,8 @@ const DisposerRequest = require("../models/DisposerRequest");
 const Notification = require("../models/Notification");
 const Payment = require("../models/Payment");
 const authMiddleware = require("../middleware/authMiddleware");
+const User = require("../models/user");
+const PointsHistory = require("../models/PointsHistory");
 
 /* ---------------- CREATE request (Disposer) ---------------- */
 router.post("/", authMiddleware, async (req, res) => {
@@ -48,6 +50,15 @@ router.post("/", authMiddleware, async (req, res) => {
       image,
       status,
       date,
+    });
+
+    /* 🏆 AWARD SUBMISSION POINTS (+10) */
+    await User.findByIdAndUpdate(disposerId, { $inc: { communityPoints: 10 } });
+    await PointsHistory.create({
+      userId: disposerId,
+      actionType: "Request Submitted",
+      pointsEarned: 10,
+      relatedWasteRequest: request._id
     });
 
     res.status(201).json(request);
@@ -102,12 +113,34 @@ router.patch("/:id/status", async (req, res) => {
     request.status = status;
     await request.save();
 
-    /* 🔔 CREATE NOTIFICATION WHEN PICKED UP */
+    /* 🔔 CREATE NOTIFICATION + AWARD ECO POINTS WHEN PICKED UP */
     if (status === "Picked Up") {
       await Notification.create({
         disposerId: request.disposerId,
         message: "Your waste request has been picked up by the collector ✅",
       });
+
+      // 🏆 CALCULATE ADDITIONAL REWARDS
+      let totalBonus = 0;
+
+      // 1. Quantity points
+      const qty = Number(request.wasteQuantity);
+      if (qty >= 1 && qty <= 3) totalBonus += 5;
+      else if (qty > 3 && qty <= 7) totalBonus += 10;
+      else if (qty > 7) totalBonus += 20;
+
+      // 2. Segregation points (if more than 1 type)
+      if (request.wasteTypes.length > 1) totalBonus += 15;
+
+      if (totalBonus > 0) {
+        await User.findByIdAndUpdate(request.disposerId, { $inc: { communityPoints: totalBonus } });
+        await PointsHistory.create({
+          userId: request.disposerId,
+          actionType: "Waste Collection Bonus",
+          pointsEarned: totalBonus,
+          relatedWasteRequest: request._id
+        });
+      }
     }
 
     res.status(200).json(request);
