@@ -29,6 +29,7 @@ exports.signup = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role,
+      status: role === "collector" ? "Pending" : "Active"
     });
 
     return res.status(201).json({
@@ -65,6 +66,14 @@ exports.login = async (req, res) => {
       return res
         .status(400)
         .json({ message: `You are registered as ${user.role}` });
+    }
+
+    if (user.status === "Pending") {
+      return res.status(403).json({ message: "Your account is pending admin approval. You will be able to log in once your request is accepted." });
+    }
+
+    if (user.status === "Blocked") {
+      return res.status(403).json({ message: "Your account has been blocked by the administration." });
     }
 
     const token = jwt.sign(
