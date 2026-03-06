@@ -75,7 +75,9 @@ router.get("/my", authMiddleware, async (req, res) => {
 
     const requests = await DisposerRequest.find({
       disposerId,
-    }).sort({ _id: -1 });
+    })
+      .populate("collectorId", "name")
+      .sort({ _id: -1 });
 
     res.status(200).json(requests);
   } catch (err) {
