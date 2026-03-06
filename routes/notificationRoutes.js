@@ -6,7 +6,7 @@ const Notification = require("../models/Notification");
 router.get("/:disposerId", async (req, res) => {
   try {
     const notifications = await Notification.find({
-      disposerId: req.params.disposerId,
+      userId: req.params.disposerId,
     }).sort({ createdAt: -1 });
 
     res.status(200).json(notifications);
@@ -19,7 +19,7 @@ router.get("/:disposerId", async (req, res) => {
 router.patch("/mark-read/:disposerId", async (req, res) => {
   try {
     await Notification.updateMany(
-      { disposerId: req.params.disposerId, read: false },
+      { userId: req.params.disposerId, read: false },
       { $set: { read: true } }
     );
     res.status(200).json({ message: "Marked all as read" });
@@ -32,7 +32,7 @@ router.patch("/mark-read/:disposerId", async (req, res) => {
 router.delete("/:disposerId", async (req, res) => {
   try {
     await Notification.deleteMany({
-      disposerId: req.params.disposerId,
+      userId: req.params.disposerId,
     });
     res.status(200).json({ message: "Cleared all notifications" });
   } catch (err) {

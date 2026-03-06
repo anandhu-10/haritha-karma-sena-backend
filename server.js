@@ -90,6 +90,9 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/points", pointsRoutes);
 app.use("/api/stats", statsRoutes);
 
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/api/admin", adminRoutes);
+
 /* ---------- PERSISTENT CHAT API ---------- */
 app.get("/api/messages/:roomId", async (req, res) => {
   try {

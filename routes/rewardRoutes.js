@@ -58,4 +58,27 @@ router.post("/claim", authMiddleware, async (req, res) => {
     }
 });
 
+/* ---------------- ADMIN: ADD new reward ---------------- */
+router.post("/", authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== "admin") return res.status(403).json({ message: "Access denied" });
+        const { title, description, pointsRequired, rewardType, iconType } = req.body;
+        const newReward = await Reward.create({ title, description, pointsRequired, rewardType, iconType });
+        res.status(201).json(newReward);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/* ---------------- ADMIN: DELETE reward ---------------- */
+router.delete("/:id", authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== "admin") return res.status(403).json({ message: "Access denied" });
+        await Reward.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: "Reward deleted" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

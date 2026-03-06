@@ -11,7 +11,7 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (!["disposer", "collector"].includes(role)) {
+    if (!["disposer", "collector", "admin"].includes(role)) {
       return res.status(400).json({ message: "Invalid role selected" });
     }
 

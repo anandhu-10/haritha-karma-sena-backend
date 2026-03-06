@@ -20,8 +20,13 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["disposer", "collector"],
+      enum: ["disposer", "collector", "admin"],
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Blocked", "Pending"],
+      default: "Active",
     },
     profile: {
       phone: String,

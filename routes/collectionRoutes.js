@@ -90,7 +90,7 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
 
     /* 🔔 CREATE NOTIFICATION FOR DISPOSER */
     await Notification.create({
-      disposerId: request.disposerId,
+      userId: request.disposerId,
       message: "Your waste request has been picked up by the collector ✅",
     });
 
