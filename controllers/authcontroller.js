@@ -44,12 +44,12 @@ exports.signup = async (req, res) => {
 /* ================= LOGIN ================= */
 exports.login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !password || !role) {
+    if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "Email, password and role are required" });
+        .json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
@@ -62,11 +62,6 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (user.role !== role) {
-      return res
-        .status(400)
-        .json({ message: `You are registered as ${user.role}` });
-    }
 
     if (user.status === "Pending") {
       return res.status(403).json({ message: "Your account is pending admin approval. You will be able to log in once your request is accepted." });
