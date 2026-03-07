@@ -30,14 +30,19 @@ exports.getDashboardStats = async (req, res) => {
         const requests = await DisposerRequest.find();
 
         const wasteTypeCounts = { plastic: 0, organic: 0, ewaste: 0, other: 0 };
-        requests.forEach(req => {
-            if (req.wasteTypes && req.wasteTypes.length > 0) {
-                req.wasteTypes.forEach(t => {
-                    let lowerT = t.toLowerCase();
-                    if (lowerT.includes("plastic")) wasteTypeCounts.plastic++;
-                    else if (lowerT.includes("organic") || lowerT.includes("food")) wasteTypeCounts.organic++;
-                    else if (lowerT.includes("e-waste") || lowerT.includes("electronic")) wasteTypeCounts.ewaste++;
-                    else wasteTypeCounts.other++;
+        requests.forEach(reqObj => {
+            if (Array.isArray(reqObj.wasteTypes)) {
+                reqObj.wasteTypes.forEach(t => {
+                    if (typeof t === 'string') {
+                        let lowerT = t.toLowerCase();
+                        if (lowerT.includes("plastic")) wasteTypeCounts.plastic++;
+                        else if (lowerT.includes("organic") || lowerT.includes("food")) wasteTypeCounts.organic++;
+                        else if (lowerT.includes("e-waste") || lowerT.includes("electronic")) wasteTypeCounts.ewaste++;
+                        else wasteTypeCounts.other++;
+                    } else if (t) {
+                        // Fallback for truthy non-string values
+                        wasteTypeCounts.other++;
+                    }
                 });
             }
         });
