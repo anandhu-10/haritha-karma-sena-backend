@@ -82,11 +82,15 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
       });
     }
 
-    // ✅ ASSIGN COLLECTOR (THIS FIXES CHAT)
-    request.collectorId = collectorId;
-    request.status = "Picked Up";
-
-    await request.save();
+    // ✅ ASSIGN COLLECTOR & UPDATE STATUS SECURELY (bypasses full doc validation for old records)
+    const updatedRequest = await DisposerRequest.findByIdAndUpdate(
+      requestId,
+      {
+        collectorId,
+        status: "Picked Up",
+      },
+      { new: true }
+    );
 
     /* 🔔 CREATE NOTIFICATION FOR DISPOSER */
     await Notification.create({
@@ -96,7 +100,7 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
 
     res.status(200).json({
       message: "Waste picked up successfully",
-      request,
+      request: updatedRequest,
     });
   } catch (err) {
     console.error("PICK UP ERROR:", err);

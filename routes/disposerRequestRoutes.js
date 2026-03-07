@@ -112,13 +112,16 @@ router.patch("/:id/status", async (req, res) => {
       return res.status(404).json({ message: "Request not found" });
     }
 
-    request.status = status;
-    await request.save();
+    const updatedRequest = await DisposerRequest.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
 
     /* 🔔 CREATE NOTIFICATION + AWARD ECO POINTS WHEN PICKED UP */
     if (status === "Picked Up") {
       await Notification.create({
-        disposerId: request.disposerId,
+        userId: request.disposerId,
         message: "Your waste request has been picked up by the collector ✅",
       });
 
@@ -132,7 +135,7 @@ router.patch("/:id/status", async (req, res) => {
       else if (qty > 7) totalBonus += 20;
 
       // 2. Segregation points (if more than 1 type)
-      if (request.wasteTypes.length > 1) totalBonus += 15;
+      if (request.wasteTypes && request.wasteTypes.length > 1) totalBonus += 15;
 
       if (totalBonus > 0) {
         await User.findByIdAndUpdate(request.disposerId, { $inc: { communityPoints: totalBonus } });
@@ -145,7 +148,7 @@ router.patch("/:id/status", async (req, res) => {
       }
     }
 
-    res.status(200).json(request);
+    res.status(200).json(updatedRequest);
   } catch (err) {
     console.error("UPDATE STATUS ERROR:", err);
     res.status(500).json({ message: err.message });
