@@ -26,8 +26,8 @@ exports.getDashboardStats = async (req, res) => {
             updatedAt: { $gte: startOfDay }
         });
 
-        // Chart Data Types
-        const requests = await DisposerRequest.find();
+        // Chart Data Types - Optimize by only selecting wasteTypes field
+        const requests = await DisposerRequest.find({}, "wasteTypes");
 
         const wasteTypeCounts = { plastic: 0, organic: 0, ewaste: 0, other: 0 };
         requests.forEach(reqObj => {
