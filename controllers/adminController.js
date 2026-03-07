@@ -199,3 +199,14 @@ exports.createComplaint = async (req, res) => {
         res.status(500).json({ message: "Error submitting complaint", error: error.message });
     }
 };
+
+exports.getUserComplaints = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const complaints = await Complaint.find({ userId }).sort({ createdAt: -1 });
+        res.status(200).json(complaints);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching user complaints", error: error.message });
+    }
+};
+

@@ -21,5 +21,6 @@ router.post("/awareness", adminMiddleware, adminController.createAwareness);
 
 // User/Collector route to submit a complaint
 router.post("/complaints", authMiddleware, adminController.createComplaint);
+router.get("/my-complaints", authMiddleware, adminController.getUserComplaints);
 
 module.exports = router;
