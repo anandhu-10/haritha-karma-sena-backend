@@ -14,14 +14,8 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 /* ---------- MIDDLEWARE ---------- */
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+app.use(cors()); // Permissive CORS for debugging network errors
+app.options("*", cors()); // Enable pre-flight for all routes
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
