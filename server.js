@@ -16,10 +16,7 @@ const server = http.createServer(app);
 /* ---------- MIDDLEWARE ---------- */
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://haritha-karma-sena.vercel.app",
-    ],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
