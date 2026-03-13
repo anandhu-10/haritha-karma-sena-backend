@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 /* ================= SIGNUP ================= */
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role, phone, ward, panchayath, district } = req.body;
+    const { name, email, password, role, phone, district, localBodyType, localBodyName, ward, villageOrArea } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -32,9 +32,11 @@ exports.signup = async (req, res) => {
       status: role === "collector" ? "Pending" : "Active",
       profile: {
         phone,
+        district,
+        localBodyType,
+        localBodyName,
         ward,
-        panchayath,
-        district
+        villageOrArea
       }
     });
 
@@ -133,7 +135,7 @@ exports.forgotPassword = async (req, res) => {
 /* ================= PROFILE ================= */
 exports.updateProfile = async (req, res) => {
   try {
-    const { phone, pincode, panchayath, ward, district } = req.body;
+    const { phone, pincode, district, localBodyType, localBodyName, ward, villageOrArea } = req.body;
     const userId = req.user.id;
 
     const user = await User.findById(userId);
@@ -142,9 +144,11 @@ exports.updateProfile = async (req, res) => {
     user.profile = {
       phone: phone || user.profile?.phone,
       pincode: pincode || user.profile?.pincode,
-      panchayath: panchayath || user.profile?.panchayath,
-      ward: ward || user.profile?.ward,
       district: district || user.profile?.district,
+      localBodyType: localBodyType || user.profile?.localBodyType,
+      localBodyName: localBodyName || user.profile?.localBodyName,
+      ward: ward || user.profile?.ward,
+      villageOrArea: villageOrArea || user.profile?.villageOrArea,
     };
 
     await user.save();

@@ -31,9 +31,11 @@ const userSchema = new mongoose.Schema(
     profile: {
       phone: String,
       pincode: String,
-      panchayath: String,
-      ward: String,
       district: String,
+      localBodyType: String,
+      localBodyName: String,
+      ward: String,
+      villageOrArea: String,
       lastLocation: {
         type: [Number], // [lng, lat]
         default: null,
