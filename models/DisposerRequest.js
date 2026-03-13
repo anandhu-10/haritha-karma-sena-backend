@@ -46,6 +46,10 @@ const DisposerRequestSchema = new mongoose.Schema(
     date: {
       type: String,
     },
+    ward: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

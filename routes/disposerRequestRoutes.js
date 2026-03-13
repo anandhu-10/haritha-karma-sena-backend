@@ -41,6 +41,24 @@ router.post("/", authMiddleware, async (req, res) => {
       });
     }
 
+    /* ---------- FETCH DISPOSER WARD & AUTO-ASSIGN COLLECTOR ---------- */
+    const user = await User.findById(disposerId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const disposerWard = user.profile?.ward;
+
+    // Find active collectors in the same ward
+    const potentialCollectors = await User.find({
+      role: "collector",
+      status: "Active",
+      "profile.ward": disposerWard
+    });
+
+    // Assign the first available collector if any exist
+    const collectorId = potentialCollectors.length > 0 ? potentialCollectors[0]._id : null;
+
     const request = await DisposerRequest.create({
       disposerId,
       disposerName,
@@ -48,8 +66,10 @@ router.post("/", authMiddleware, async (req, res) => {
       wasteQuantity,
       location,
       image,
-      status,
+      status: collectorId ? "Assigned" : (status || "Pending"),
       date,
+      ward: disposerWard,
+      collectorId
     });
 
     /* 🏆 AWARD SUBMISSION POINTS (+10) */
@@ -60,6 +80,14 @@ router.post("/", authMiddleware, async (req, res) => {
       pointsEarned: 10,
       relatedWasteRequest: request._id
     });
+
+    /* 🔔 NOTIFY COLLECTOR IF ASSIGNED */
+    if (collectorId) {
+      await Notification.create({
+        userId: collectorId,
+        message: `New waste request assigned in your ward (${disposerWard}) 🚛`,
+      });
+    }
 
     res.status(201).json(request);
   } catch (err) {

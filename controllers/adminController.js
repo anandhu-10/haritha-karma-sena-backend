@@ -47,12 +47,16 @@ exports.getDashboardStats = async (req, res) => {
             }
         });
 
+        // Count Unassigned Requests (Awaiting Admin)
+        const unassignedRequests = await DisposerRequest.countDocuments({ collectorId: null });
+
         res.status(200).json({
             totalUsers: totalDisposers,
             totalCollectors,
             totalRequests,
             wasteCollectedToday: wasteCollectedTodayCount,
             activeRequests,
+            unassignedRequests,
             wasteTypeDistribution: wasteTypeCounts
         });
     } catch (error) {
