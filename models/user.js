@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
       pincode: String,
       panchayath: String,
       ward: String,
+      lastLocation: {
+        type: [Number], // [lng, lat]
+        default: null,
+      },
     },
     communityPoints: {
       type: Number,

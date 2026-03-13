@@ -13,6 +13,7 @@ router.put("/users/:id/status", adminMiddleware, adminController.updateUserStatu
 router.delete("/users/:id", adminMiddleware, adminController.deleteUser);
 
 router.get("/requests", adminMiddleware, adminController.getAllRequests);
+router.post("/assign", adminMiddleware, adminController.manualAssignCollector);
 
 router.get("/complaints", adminMiddleware, adminController.getComplaints);
 router.put("/complaints/:id", adminMiddleware, adminController.updateComplaint);

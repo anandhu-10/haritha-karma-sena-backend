@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 /* ================= SIGNUP ================= */
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, ward, panchayath } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -29,7 +29,12 @@ exports.signup = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role,
-      status: role === "collector" ? "Pending" : "Active"
+      status: role === "collector" ? "Pending" : "Active",
+      profile: {
+        phone,
+        ward,
+        panchayath
+      }
     });
 
     return res.status(201).json({
@@ -44,7 +49,7 @@ exports.signup = async (req, res) => {
 /* ================= LOGIN ================= */
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, location } = req.body;
 
     if (!email || !password) {
       return res
@@ -60,6 +65,12 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    /* 📍 UPDATE COLLECTOR LOCATION ON LOGIN */
+    if (user.role === "collector" && location) {
+      user.profile.lastLocation = location;
+      await user.save();
     }
 
 
@@ -84,6 +95,7 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profile: user.profile,
       },
     });
   } catch (err) {

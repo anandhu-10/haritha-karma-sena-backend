@@ -56,8 +56,28 @@ router.post("/", authMiddleware, async (req, res) => {
       "profile.ward": disposerWard
     });
 
-    // Assign the first available collector if any exist
-    const collectorId = potentialCollectors.length > 0 ? potentialCollectors[0]._id : null;
+    /* 📍 FIND THE CLOSEST COLLECTOR */
+    let collectorId = null;
+    if (potentialCollectors.length > 0) {
+      if (location && Array.isArray(location) && location.length === 2) {
+        // Sort by distance if disposer location is available
+        const [dispLng, dispLat] = location;
+
+        const sortedCollectors = potentialCollectors.map(c => {
+          const cLoc = c.profile?.lastLocation;
+          let dist = Infinity;
+          if (cLoc && Array.isArray(cLoc) && cLoc.length === 2) {
+            dist = getDistance(dispLat, dispLng, cLoc[1], cLoc[0]);
+          }
+          return { id: c._id, distance: dist };
+        }).sort((a, b) => a.distance - b.distance);
+
+        collectorId = sortedCollectors[0].id;
+      } else {
+        // Fallback to first collector if location missing
+        collectorId = potentialCollectors[0]._id;
+      }
+    }
 
     const request = await DisposerRequest.create({
       disposerId,
@@ -87,6 +107,17 @@ router.post("/", authMiddleware, async (req, res) => {
         userId: collectorId,
         message: `New waste request assigned in your ward (${disposerWard}) 🚛`,
       });
+
+      /* Notify other collectors in area (User Requirement: "other should get a notification") */
+      // Filtering out the assigned one
+      const otherCollectors = potentialCollectors.filter(c => c._id.toString() !== collectorId.toString());
+      if (otherCollectors.length > 0) {
+        const notificationData = otherCollectors.map(c => ({
+          userId: c._id,
+          message: `A new request in ${disposerWard} was assigned to the closest collector. Keep up the good work!`
+        }));
+        await Notification.insertMany(notificationData);
+      }
     }
 
     res.status(201).json(request);
@@ -95,6 +126,18 @@ router.post("/", authMiddleware, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+/** 📍 Haversine Distance Helper (lat/lng in degrees) **/
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 /* ---------------- GET MY REQUESTS (🔥 NEW ROUTE FIX) ---------------- */
 router.get("/my", authMiddleware, async (req, res) => {
@@ -114,10 +157,26 @@ router.get("/my", authMiddleware, async (req, res) => {
   }
 });
 
-/* ---------------- GET all requests (Collector) ---------------- */
-router.get("/", async (req, res) => {
+/* ---------------- GET all requests (Collector - AREA RESTRICTED) ---------------- */
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const requests = await DisposerRequest.find().sort({ _id: -1 });
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'collector') {
+      // Fallback for non-collectors (or just return empty)
+      const requests = await DisposerRequest.find().sort({ _id: -1 }).limit(50);
+      return res.status(200).json(requests);
+    }
+
+    const myWard = user.profile?.ward;
+
+    // Only show requests in the same ward, or requests specifically assigned to this collector
+    const requests = await DisposerRequest.find({
+      $or: [
+        { ward: myWard },
+        { collectorId: user._id }
+      ]
+    }).sort({ _id: -1 });
+
     res.status(200).json(requests);
   } catch (err) {
     console.error("FETCH REQUEST ERROR:", err);

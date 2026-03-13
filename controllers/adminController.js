@@ -219,3 +219,27 @@ exports.getUserComplaints = async (req, res) => {
     }
 };
 
+/* ================= MANUAL ASSIGNMENT ================= */
+exports.manualAssignCollector = async (req, res) => {
+    try {
+        const { requestId, collectorId } = req.body;
+
+        const request = await DisposerRequest.findByIdAndUpdate(
+            requestId,
+            { collectorId, status: "Assigned" },
+            { new: true }
+        );
+
+        if (!request) return res.status(404).json({ message: "Request not found" });
+
+        await Notification.create({
+            userId: collectorId,
+            message: `Admin manually assigned a new task to you 🚛`,
+        });
+
+        res.status(200).json({ message: "Collector assigned manually", request });
+    } catch (error) {
+        res.status(500).json({ message: "Error assigning collector", error: error.message });
+    }
+};
+
