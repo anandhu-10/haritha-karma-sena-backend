@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 /* ================= SIGNUP ================= */
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role, phone, ward, panchayath } = req.body;
+    const { name, email, password, role, phone, ward, panchayath, district } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -33,7 +33,8 @@ exports.signup = async (req, res) => {
       profile: {
         phone,
         ward,
-        panchayath
+        panchayath,
+        district
       }
     });
 
@@ -132,7 +133,7 @@ exports.forgotPassword = async (req, res) => {
 /* ================= PROFILE ================= */
 exports.updateProfile = async (req, res) => {
   try {
-    const { phone, pincode, panchayath, ward } = req.body;
+    const { phone, pincode, panchayath, ward, district } = req.body;
     const userId = req.user.id;
 
     const user = await User.findById(userId);
@@ -143,6 +144,7 @@ exports.updateProfile = async (req, res) => {
       pincode: pincode || user.profile?.pincode,
       panchayath: panchayath || user.profile?.panchayath,
       ward: ward || user.profile?.ward,
+      district: district || user.profile?.district,
     };
 
     await user.save();
