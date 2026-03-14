@@ -8,6 +8,7 @@ const {
 
 const DisposerRequest = require("../models/DisposerRequest");
 const Notification = require("../models/Notification");
+const User = require("../models/User");
 
 /* ---------------- COLLECTION AREAS ---------------- */
 
@@ -93,9 +94,16 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
     );
 
     /* 🔔 CREATE NOTIFICATION FOR DISPOSER */
+    const collector = await User.findById(collectorId);
+    let messageStr = "Your waste request has been picked up by a collector ✅";
+    if (collector) {
+      const phone = collector.profile?.phone || "Not provided";
+      messageStr = `${collector.name} has picked up your waste request! 🚛 Contact: ${phone}`;
+    }
+
     await Notification.create({
       userId: request.disposerId,
-      message: "Your waste request has been picked up by the collector ✅",
+      message: messageStr,
     });
 
     res.status(200).json({
