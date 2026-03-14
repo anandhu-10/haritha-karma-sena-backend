@@ -147,7 +147,7 @@ router.get("/my", authMiddleware, async (req, res) => {
     const requests = await DisposerRequest.find({
       disposerId,
     })
-      .populate("collectorId", "name")
+      .populate("collectorId", "name profile")
       .sort({ _id: -1 });
 
     res.status(200).json(requests);
