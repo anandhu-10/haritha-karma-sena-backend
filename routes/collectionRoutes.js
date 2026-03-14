@@ -8,7 +8,7 @@ const {
 
 const DisposerRequest = require("../models/DisposerRequest");
 const Notification = require("../models/Notification");
-const User = require("../models/User");
+const User = require("../models/user");
 
 /* ---------------- COLLECTION AREAS ---------------- */
 
