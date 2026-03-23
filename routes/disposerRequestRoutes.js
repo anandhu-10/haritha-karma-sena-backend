@@ -56,12 +56,7 @@ router.post("/", authMiddleware, async (req, res) => {
       "profile.ward": disposerWard
     });
 
-    /* ---------- NOTIFY COLLECTORS IN WARD ---------- */
-    const potentialCollectors = await User.find({
-      role: "collector",
-      status: "Active",
-      "profile.ward": disposerWard
-    });
+
 
     const request = await DisposerRequest.create({
       disposerId,
