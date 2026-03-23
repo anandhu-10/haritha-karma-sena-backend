@@ -56,28 +56,12 @@ router.post("/", authMiddleware, async (req, res) => {
       "profile.ward": disposerWard
     });
 
-    /* 📍 FIND THE CLOSEST COLLECTOR */
-    let collectorId = null;
-    if (potentialCollectors.length > 0) {
-      if (location && Array.isArray(location) && location.length === 2) {
-        // Sort by distance if disposer location is available
-        const [dispLng, dispLat] = location;
-
-        const sortedCollectors = potentialCollectors.map(c => {
-          const cLoc = c.profile?.lastLocation;
-          let dist = Infinity;
-          if (cLoc && Array.isArray(cLoc) && cLoc.length === 2) {
-            dist = getDistance(dispLat, dispLng, cLoc[1], cLoc[0]);
-          }
-          return { id: c._id, distance: dist };
-        }).sort((a, b) => a.distance - b.distance);
-
-        collectorId = sortedCollectors[0].id;
-      } else {
-        // Fallback to first collector if location missing
-        collectorId = potentialCollectors[0]._id;
-      }
-    }
+    /* ---------- NOTIFY COLLECTORS IN WARD ---------- */
+    const potentialCollectors = await User.find({
+      role: "collector",
+      status: "Active",
+      "profile.ward": disposerWard
+    });
 
     const request = await DisposerRequest.create({
       disposerId,
@@ -86,10 +70,10 @@ router.post("/", authMiddleware, async (req, res) => {
       wasteQuantity,
       location,
       image,
-      status: collectorId ? "Assigned" : (status || "Pending"),
+      status: "Pending",
       date,
       ward: disposerWard,
-      collectorId
+      collectorId: null
     });
 
     /* 🏆 AWARD SUBMISSION POINTS (+10) */
@@ -101,23 +85,12 @@ router.post("/", authMiddleware, async (req, res) => {
       relatedWasteRequest: request._id
     });
 
-    /* 🔔 NOTIFY COLLECTOR IF ASSIGNED */
-    if (collectorId) {
-      await Notification.create({
-        userId: collectorId,
-        message: `New waste request assigned in your ward (${disposerWard}) 🚛`,
-      });
-
-      /* Notify other collectors in area (User Requirement: "other should get a notification") */
-      // Filtering out the assigned one
-      const otherCollectors = potentialCollectors.filter(c => c._id.toString() !== collectorId.toString());
-      if (otherCollectors.length > 0) {
-        const notificationData = otherCollectors.map(c => ({
-          userId: c._id,
-          message: `A new request in ${disposerWard} was assigned to the closest collector. Keep up the good work!`
-        }));
-        await Notification.insertMany(notificationData);
-      }
+    if (potentialCollectors.length > 0) {
+      const notificationData = potentialCollectors.map(c => ({
+        userId: c._id,
+        message: `A new waste disposal request is available in ${disposerWard}! 🚛`
+      }));
+      await Notification.insertMany(notificationData);
     }
 
     res.status(201).json(request);
