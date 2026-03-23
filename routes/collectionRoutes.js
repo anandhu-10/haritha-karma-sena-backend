@@ -60,7 +60,7 @@ router.get("/collector/dashboard-stats", async (req, res) => {
 router.patch("/collector/pickup/:requestId", async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { collectorId } = req.body;
+    const { collectorId, timeSlot } = req.body;
 
     if (!collectorId) {
       return res.status(400).json({
@@ -89,22 +89,33 @@ router.patch("/collector/pickup/:requestId", async (req, res) => {
       {
         collectorId,
         status: "Picked Up",
+        timeSlot: timeSlot || "Anytime",
       },
       { new: true }
     );
 
     /* 🔔 CREATE NOTIFICATION FOR DISPOSER */
     const collector = await User.findById(collectorId);
-    let messageStr = "Your waste request has been picked up by a collector ✅";
+    let messageStr = `Your waste request has been picked up by a collector ✅ Time Slot: ${timeSlot || "Anytime"}`;
     if (collector) {
       const phone = collector.profile?.phone || "Not provided";
-      messageStr = `${collector.name} has picked up your waste request! 🚛 Contact: ${phone}`;
+      messageStr = `${collector.name} has picked up your waste request! 🚛 Time Slot: ${timeSlot || "Anytime"} | Contact: ${phone}`;
     }
 
     await Notification.create({
       userId: request.disposerId,
       message: messageStr,
     });
+
+    /* 🔔 CREATE NOTIFICATION FOR ADMINS */
+    const admins = await User.find({ role: "admin" });
+    const adminNotes = admins.map(admin => ({
+      userId: admin._id,
+      message: `Waste request from ${request.disposerName || "Disposer"} was picked up by ${collector ? collector.name : "Collector"}.`,
+    }));
+    if (adminNotes.length > 0) {
+      await Notification.insertMany(adminNotes);
+    }
 
     res.status(200).json({
       message: "Waste picked up successfully",

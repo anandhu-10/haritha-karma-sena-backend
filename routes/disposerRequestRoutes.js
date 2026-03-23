@@ -233,6 +233,23 @@ router.patch("/:id/status", async (req, res) => {
           relatedWasteRequest: request._id
         });
       }
+    } else if (status === "Completed") {
+      // 🔔 User requirement: "when the waste is picked .admin and disposar should notify waste is collected"
+      // Disposer Notification
+      await Notification.create({
+        userId: request.disposerId,
+        message: "Your waste has been successfully collected! ✅ Thank you for your contribution.",
+      });
+
+      // Admin Notification
+      const admins = await User.find({ role: "admin" });
+      const adminNotes = admins.map(admin => ({
+        userId: admin._id,
+        message: `Waste from ${request.disposerName || "Disposer"} has been collected successfully.`,
+      }));
+      if (adminNotes.length > 0) {
+        await Notification.insertMany(adminNotes);
+      }
     }
 
     res.status(200).json(updatedRequest);
