@@ -50,6 +50,10 @@ const DisposerRequestSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    timeSlot: {
+      type: String,
+      default: "Anytime",
+    },
   },
   { timestamps: true }
 );
