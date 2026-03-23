@@ -15,6 +15,11 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "Invalid role selected" });
     }
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({ email: normalizedEmail });
