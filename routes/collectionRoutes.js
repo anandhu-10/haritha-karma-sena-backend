@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   addCollectionArea,
   getCollectionAreas,
+  deleteCollectionArea,
 } = require("../controllers/collectionController");
 
 const DisposerRequest = require("../models/DisposerRequest");
@@ -17,6 +18,9 @@ router.post("/collectionAreas", addCollectionArea);
 
 // Get all collection areas
 router.get("/collectionAreas", getCollectionAreas);
+
+// Delete a collection area
+router.delete("/collectionAreas/:id", deleteCollectionArea);
 
 /* ---------------- COLLECTOR DASHBOARD STATS ---------------- */
 /*

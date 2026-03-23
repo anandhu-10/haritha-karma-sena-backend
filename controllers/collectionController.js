@@ -21,3 +21,20 @@ exports.getCollectionAreas = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch collection areas" });
   }
 };
+
+// DELETE - remove a collection area
+exports.deleteCollectionArea = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await CollectionArea.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Collection area not found" });
+    }
+
+    res.status(200).json({ message: "Collection area removed successfully" });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    res.status(500).json({ message: "Failed to remove collection area" });
+  }
+};
