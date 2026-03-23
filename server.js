@@ -103,7 +103,7 @@ app.get("/api/messages/:roomId", async (req, res) => {
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "OK",
-    message: "Haritha Karma Sena Backend + Chat is running 🚀",
+    message: "Hygieno Backend + Chat is running 🚀",
   });
 });
 
