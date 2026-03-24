@@ -14,7 +14,9 @@ exports.addCollectionArea = async (req, res) => {
 // GET - fetch all collection areas
 exports.getCollectionAreas = async (req, res) => {
   try {
-    const data = await CollectionArea.find().sort({ _id: -1 });
+    const data = await CollectionArea.find()
+      .populate("userId", "name profile")
+      .sort({ _id: -1 });
     res.status(200).json(data);
   } catch (err) {
     console.error(err);
