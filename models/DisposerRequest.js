@@ -54,6 +54,14 @@ const DisposerRequestSchema = new mongoose.Schema(
       type: String,
       default: "Anytime",
     },
+    completionLocation: {
+      type: [Number], // [lng, lat] of the collector at time of completion
+      default: null,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

@@ -167,9 +167,15 @@ router.patch("/:id/status", async (req, res) => {
       return res.status(404).json({ message: "Request not found" });
     }
 
+    const updateData = { status };
+    if (completionLocation) {
+      updateData.completionLocation = completionLocation;
+      updateData.completedAt = new Date();
+    }
+
     const updatedRequest = await DisposerRequest.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateData,
       { new: true }
     );
 
