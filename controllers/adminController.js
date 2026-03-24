@@ -16,13 +16,12 @@ exports.getDashboardStats = async (req, res) => {
         startOfDay.setHours(0, 0, 0, 0);
 
         // Convert to ISO strings for string comparison if needed, but date is string in DisposerRequest: `date: String`.
-        // Let's count Active Requests
-        const activeRequests = await DisposerRequest.countDocuments({ status: { $ne: "Collected" } });
+        // Let's count Active Requests (everything not completed)
+        const activeRequests = await DisposerRequest.countDocuments({ status: { $ne: "Completed" } });
 
-        // For "Waste Collected Today", we might need to parse strings, let's just get today's date formatted
-        const todayStr = startOfDay.toISOString().split("T")[0]; // YYYY-MM-DD
+        // For "Waste Collected Today", we count everything that has been physically taken or finalized today
         const wasteCollectedTodayCount = await DisposerRequest.countDocuments({
-            status: "Collected",
+            status: { $in: ["Waste Collected", "Completed"] },
             updatedAt: { $gte: startOfDay }
         });
 
