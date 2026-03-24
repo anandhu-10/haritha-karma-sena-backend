@@ -201,6 +201,12 @@ router.patch("/:id/status", async (req, res) => {
           relatedWasteRequest: request._id
         });
       }
+    } else if (status === "Waste Collected") {
+      // 🔔 New Requirement: Notify disposer when waste is physically taken
+      await Notification.create({
+        userId: request.disposerId,
+        message: "Your waste has been collected from your house! 🏠✨",
+      });
     } else if (status === "Completed") {
       // 🔔 User requirement: "when the waste is picked .admin and disposar should notify waste is collected"
       // Disposer Notification
